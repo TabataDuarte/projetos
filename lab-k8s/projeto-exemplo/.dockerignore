@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+k8s/
+regras-banco/
+.git
+README.md
+sonar-project.properties

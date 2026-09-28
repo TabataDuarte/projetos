@@ -1,0 +1,16 @@
+rules:
+  - id: hash-fraco-para-senha
+    languages: [python]
+    severity: ERROR
+    message: >
+      Uso de algoritmo de hash criptograficamente fraco (MD5/SHA-1) para
+      senhas. Para senhas, utilizar bcrypt, scrypt ou Argon2, conforme a
+      norma interna de desenvolvimento seguro do banco.
+    metadata:
+      categoria: criptografia
+      owasp: "A02:2021 Cryptographic Failures"
+      autor: laboratorio-semgrep
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.md5(...)
+          - pattern: hashlib.sha1(...)

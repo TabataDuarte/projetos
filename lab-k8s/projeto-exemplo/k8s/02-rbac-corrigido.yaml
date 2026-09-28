@@ -1,0 +1,36 @@
+# =============================================================
+# 02-rbac-corrigido.yaml
+# Substitui o ClusterRoleBinding de cluster-admin por uma Role restrita
+# ao namespace "cartoes", seguindo o princípio do menor privilégio.
+#
+# IMPORTANTE: aplicar este arquivo NÃO remove o ClusterRoleBinding
+# vulnerável criado em 01-vulneravel.yaml — são recursos independentes.
+# É necessário excluir o ClusterRoleBinding explicitamente (veja a
+# Parte 6 do laboratório).
+# =============================================================
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: simulador-cartoes-role
+  namespace: cartoes
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: simulador-cartoes-binding
+  namespace: cartoes
+subjects:
+  - kind: ServiceAccount
+    name: simulador-cartoes-sa
+    namespace: cartoes
+roleRef:
+  kind: Role
+  name: simulador-cartoes-role
+  apiGroup: rbac.authorization.k8s.io

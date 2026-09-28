@@ -1,0 +1,27 @@
+# =============================================================
+# 04-networkpolicy-allow-dns.yaml
+# Libera egress para o CoreDNS (namespace kube-system, portas 53
+# UDP/TCP). Sem esta política, o default-deny-all bloqueia inclusive
+# a resolução de nomes DNS dentro do cluster — um erro clássico que
+# faz aplicações "pararem de funcionar" de forma confusa depois de
+# aplicar o default-deny.
+# =============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: cartoes
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

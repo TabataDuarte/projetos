@@ -1,0 +1,16 @@
+# =============================================================
+# 03-networkpolicy-default-deny.yaml
+# Bloqueia TODO o tráfego de entrada (Ingress) e saída (Egress) de
+# todos os Pods do namespace "cartoes". Deve ser aplicada ANTES das
+# políticas de liberação (04 e 05) — nunca depois.
+# =============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: cartoes
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress

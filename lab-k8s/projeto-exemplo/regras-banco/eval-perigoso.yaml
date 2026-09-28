@@ -1,0 +1,16 @@
+rules:
+  - id: uso-perigoso-de-eval
+    languages: [python]
+    severity: ERROR
+    message: >
+      Uso de eval() sobre uma expressão. Se a expressão contiver, direta
+      ou indiretamente, entrada fornecida pelo usuário, isso permite
+      execução arbitrária de código Python. Substituir por uma alternativa
+      segura, como ast.literal_eval() (para literais) ou um avaliador de
+      expressões matemáticas restrito.
+    metadata:
+      categoria: injecao-de-codigo
+      owasp: "A03:2021 Injection"
+      autor: laboratorio-semgrep
+    patterns:
+      - pattern: eval(...)

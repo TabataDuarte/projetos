@@ -1,0 +1,27 @@
+# =============================================================
+# 08-namespace-pod-security.yaml
+# Aplica os rótulos de Pod Security Admission ao namespace "cartoes",
+# no nível "restricted" — o mais rigoroso dos três padrões (Privileged,
+# Baseline, Restricted). A partir do momento em que este arquivo é
+# aplicado, o próprio API Server do Kubernetes passa a REJEITAR
+# qualquer Pod que não atenda aos requisitos de hardening (usuário
+# não-root, sem privilege escalation, capabilities zeradas, etc.) —
+# é por isso que ele deve ser aplicado DEPOIS do Deployment corrigido
+# (07), nunca antes: aplicado antes, o próprio Deployment vulnerável
+# de 01-vulneravel.yaml seria rejeitado na criação.
+#
+# audit e warn ficam no mesmo nível de enforce para que qualquer
+# tentativa futura de reintroduzir uma configuração insegura apareça
+# imediatamente nos logs de auditoria e como aviso ao usuário que
+# rodou o kubectl apply — não apenas seja bloqueada silenciosamente.
+# =============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cartoes
+  labels:
+    laboratorio: seguranca-kubernetes
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

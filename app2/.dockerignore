@@ -1,0 +1,9 @@
+.git
+.github
+secrets/
+*.env
+.env*
+**/__pycache__
+Dockerfile*
+compose*.yaml
+*.md

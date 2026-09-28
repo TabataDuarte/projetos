@@ -1,0 +1,20 @@
+rules:
+  - id: sql-injection-taint
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >
+      Dado originado de uma fonte não confiável (parâmetro de requisição)
+      alcança uma execução de consulta SQL sem passar por sanitização —
+      Source -> Sink sem Sanitizer, exatamente o padrão de Taint Analysis
+      estudado na aula de SAST. Utilizar consulta parametrizada (Prepared
+      Statement) em vez de concatenação ou f-string.
+    metadata:
+      categoria: injecao-sql
+      owasp: "A03:2021 Injection"
+      autor: laboratorio-semgrep
+    pattern-sources:
+      - pattern: request.args.get(...)
+      - pattern: request.form.get(...)
+    pattern-sinks:
+      - pattern: $CONN.execute(...)

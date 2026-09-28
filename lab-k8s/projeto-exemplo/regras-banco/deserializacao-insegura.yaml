@@ -1,0 +1,15 @@
+rules:
+  - id: deserializacao-insegura-pickle
+    languages: [python]
+    severity: ERROR
+    message: >
+      Uso de pickle.loads() sobre dado que pode ser controlado pelo
+      usuário. A desserialização de dados não confiáveis com pickle
+      permite execução arbitrária de código. Utilizar um formato seguro
+      como JSON para dados que cruzam a fronteira de confiança.
+    metadata:
+      categoria: deserializacao-insegura
+      owasp: "A08:2021 Software and Data Integrity Failures"
+      autor: laboratorio-semgrep
+    patterns:
+      - pattern: pickle.loads(...)

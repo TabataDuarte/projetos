@@ -1,0 +1,81 @@
+# =============================================================
+# 07-deployment-hardened.yaml
+# Versão corrigida do Deployment. Aplicar este arquivo substitui o
+# Deployment vulnerável de 01-vulneravel.yaml (mesmo nome e
+# namespace). Correções aplicadas, uma para cada vulnerabilidade
+# plantada:
+#   3/4/5. securityContext restritivo (não-root, sem escalada de
+#          privilégio, capabilities zeradas)
+#   6. Tag de imagem fixada (1.0, não "latest")
+#   7. resources.requests/limits definidos
+#   8. livenessProbe e readinessProbe apontando para /saude
+#   2. Segredo vem de um Secret (06), não mais do ConfigMap
+#
+# Um emptyDir é montado em /app/tmp como padrão de referência: com
+# readOnlyRootFilesystem: true, qualquer diretório em que a aplicação
+# precise escrever (cache, arquivos temporários) precisa de um volume
+# explícito — o sistema de arquivos da imagem em si fica bloqueado
+# para escrita.
+# =============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulador-cartoes
+  namespace: cartoes
+  labels:
+    app: simulador-cartoes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simulador-cartoes
+  template:
+    metadata:
+      labels:
+        app: simulador-cartoes
+    spec:
+      serviceAccountName: simulador-cartoes-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: simulador-cartoes
+          image: simulador-cartoes:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          envFrom:
+            - secretRef:
+                name: simulador-cartoes-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /saude
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /saude
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: tmp-writable
+              mountPath: /app/tmp
+      volumes:
+        - name: tmp-writable
+          emptyDir: {}

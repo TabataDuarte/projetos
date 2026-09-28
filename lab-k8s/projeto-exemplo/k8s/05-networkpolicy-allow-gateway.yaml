@@ -1,0 +1,25 @@
+# =============================================================
+# 05-networkpolicy-allow-gateway.yaml
+# Libera ingress na porta 5000 apenas de Pods rotulados
+# app=api-gateway. Qualquer outro Pod do namespace (ou de fora dele)
+# continua bloqueado pelo default-deny-all.
+# =============================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-to-simulador
+  namespace: cartoes
+spec:
+  podSelector:
+    matchLabels:
+      app: simulador-cartoes
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+      ports:
+        - protocol: TCP
+          port: 5000

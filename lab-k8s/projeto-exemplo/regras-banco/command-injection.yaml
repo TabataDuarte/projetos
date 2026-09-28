@@ -1,0 +1,15 @@
+rules:
+  - id: command-injection-shell-true
+    languages: [python]
+    severity: ERROR
+    message: >
+      Chamada a subprocess com shell=True combinada com construção
+      dinâmica do comando. Se qualquer parte do comando vier de entrada
+      do usuário, isso permite injeção de comandos do sistema
+      operacional. Preferir shell=False com os argumentos em lista.
+    metadata:
+      categoria: injecao-de-comando
+      owasp: "A03:2021 Injection"
+      autor: laboratorio-semgrep
+    patterns:
+      - pattern: subprocess.run(..., shell=True, ...)

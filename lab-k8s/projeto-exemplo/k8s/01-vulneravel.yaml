@@ -1,0 +1,89 @@
+# =============================================================
+# 01-vulneravel.yaml
+# Baseline INTENCIONALMENTE vulnerável do Simulador de Cartões de
+# Crédito, para o Laboratório de Segurança em Kubernetes.
+#
+# Vulnerabilidades plantadas neste arquivo (9 no total):
+#   1. ServiceAccount vinculada a um ClusterRoleBinding de cluster-admin
+#   2. Segredo (DB_PASSWORD, API_KEY_BANDEIRA) em ConfigMap, não em Secret
+#   3. securityContext.privileged: true
+#   4. securityContext.runAsUser: 0 (root explícito)
+#   5. securityContext.allowPrivilegeEscalation: true
+#   6. Tag de imagem "latest" (não fixada)
+#   7. Ausência de resources (requests/limits)
+#   8. Ausência de livenessProbe / readinessProbe
+#   9. Nenhuma NetworkPolicy restringindo tráfego (aplica-se ao
+#      namespace inteiro — o padrão de fábrica do Kubernetes permite
+#      todo tráfego entre todos os Pods)
+# =============================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: simulador-cartoes-sa
+  namespace: cartoes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: simulador-cartoes-binding
+subjects:
+  - kind: ServiceAccount
+    name: simulador-cartoes-sa
+    namespace: cartoes
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: simulador-cartoes-config
+  namespace: cartoes
+data:
+  DB_PASSWORD: "Cart0es@2024"
+  API_KEY_BANDEIRA: "bandeira_live_4f8e2a1b9c7d6e5f"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulador-cartoes
+  namespace: cartoes
+  labels:
+    app: simulador-cartoes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simulador-cartoes
+  template:
+    metadata:
+      labels:
+        app: simulador-cartoes
+    spec:
+      serviceAccountName: simulador-cartoes-sa
+      containers:
+        - name: simulador-cartoes
+          image: simulador-cartoes:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            allowPrivilegeEscalation: true
+          envFrom:
+            - configMapRef:
+                name: simulador-cartoes-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simulador-cartoes
+  namespace: cartoes
+spec:
+  selector:
+    app: simulador-cartoes
+  ports:
+    - port: 80
+      targetPort: 5000
